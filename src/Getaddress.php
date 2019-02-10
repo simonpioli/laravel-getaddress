@@ -55,10 +55,8 @@ class GetAddress
             $requestParameters['query'] = $options;
         }
 
-        dump($requestParameters);
-
         try {
-            $response = $this->client->get(sprintf('%s/%s', $postcode, $houseNumOrName), $requestParameters);
+            $response = $this->client->get(sprintf('find/%s/%s', $postcode, $houseNumOrName), $requestParameters);
         } catch (RequestException $e) {
             if ($e->hasResponse() && $e->getResponse()->getStatusCode() == 401) {
                 throw new GetAddressAuthenticationFailedException();
@@ -87,11 +85,11 @@ class GetAddress
         $getAddressResponse = new GetAddressResponse();
 
         //Set the longitude and latitude fields
-        $getAddressResponse->setLongitude($responseObj->Longitude);
-        $getAddressResponse->setLatitude($responseObj->Latitude);
+        $getAddressResponse->setLongitude($responseObj->longitude);
+        $getAddressResponse->setLatitude($responseObj->latitude);
 
         //Set the address fields
-        foreach ($responseObj->Addresses as $addressLine) {
+        foreach ($responseObj->addresses as $addressLine) {
             $addressParts = explode(',', $addressLine);
             $getAddressResponse->addAddress(
                 new Address(

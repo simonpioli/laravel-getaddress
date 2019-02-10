@@ -41,14 +41,22 @@ class GetAddress
     /**
      * Retrieves the addresses from get address api
      *
-     * @param string $postcode
+     * @param $postcode
      * @param string $houseNumOrName
-     * @return \Szhorvath\GetAddress\GetAddressResponse\GetAddressResponse
+     * @param array $options
+     * @return GetAddressResponse\GetAddressResponse
+     * @throws GetAddressAuthenticationFailedException
+     * @throws GetAddressRequestException
      */
-    public function lookup($postcode, $houseNumOrName = '')
+    public function lookup($postcode, $houseNumOrName = '', $options = [])
     {
+        $requestParameters = ['auth' => ['api-key', $this->apiKey]];
+        if (!empty($options)) {
+            $requestParameters['query'] = $options;
+        }
+
         try {
-            $response = $this->client->get(sprintf('%s/%s', $postcode, $houseNumOrName), ['auth' => ['api-key', $this->apiKey]]);
+            $response = $this->client->get(sprintf('%s/%s', $postcode, $houseNumOrName), $requestParameters);
         } catch (RequestException $e) {
             if ($e->hasResponse() && $e->getResponse()->getStatusCode() == 401) {
                 throw new GetAddressAuthenticationFailedException();

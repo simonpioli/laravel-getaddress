@@ -50,6 +50,9 @@ class GetAddress
      */
     public function lookup($postcode, $houseNumOrName = '', $options = [])
     {
+//        TODO: Add support for expanded address
+//        TODO: Add support for array - bypasses hydration and returns an array
+//        TODO: Add tests
         $requestParameters = ['auth' => ['api-key', $this->apiKey]];
         if (!empty($options)) {
             $requestParameters['query'] = $options;

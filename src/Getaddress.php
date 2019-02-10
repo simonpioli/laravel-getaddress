@@ -3,6 +3,7 @@
 namespace Szhorvath\GetAddress;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7;
 use Szhorvath\GetAddress\GetAddressResponse;
@@ -39,14 +40,13 @@ class GetAddress
     }
 
     /**
-     * Retrieves the addresses from get address api
-     *
      * @param $postcode
      * @param string $houseNumOrName
      * @param array $options
-     * @return GetAddressResponse\GetAddressResponse
+     * @return GetAddressResponse
      * @throws GetAddressAuthenticationFailedException
      * @throws GetAddressRequestException
+     * @throws GuzzleException
      */
     public function lookup($postcode, $houseNumOrName = '', $options = [])
     {
@@ -56,25 +56,30 @@ class GetAddress
         }
 
         try {
-            $response = $this->client->get(sprintf('%s/%s', $postcode, $houseNumOrName), $requestParameters);
+            $request = $this->client->request('GET', sprintf('%s/%s', $postcode, $houseNumOrName), $requestParameters);
+            dump($request); die();
+            $response = $request->send();
+
+//            $response = $this->client->get(sprintf('%s/%s', $postcode, $houseNumOrName), $requestParameters);
         } catch (RequestException $e) {
             if ($e->hasResponse() && $e->getResponse()->getStatusCode() == 401) {
                 throw new GetAddressAuthenticationFailedException();
             }
-
             throw new GetAddressRequestException();
+        } catch (GuzzleException $e) {
+            throw new GetAddressRequestException($e->getMessage(), $e->getCode());
         }
 
         $parsedResponse = $this->parseResponse((string) $response->getBody());
 
-        return  $parsedResponse;
+        return $parsedResponse;
     }
 
     /**
      * Processes the response coming from getaddress api
      *
      * @param string $response
-     * @return \Szhorvath\GetAddress\GetAddressResponse\GetAddressResponse
+     * @return GetAddressResponse
      */
     public function parseResponse($response)
     {

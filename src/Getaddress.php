@@ -3,6 +3,7 @@
 namespace Szhorvath\GetAddress;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7;
 use Szhorvath\GetAddress\GetAddressResponse;
@@ -39,34 +40,42 @@ class GetAddress
     }
 
     /**
-     * Retrieves the addresses from get address api
-     *
-     * @param string $postcode
+     * @param $postcode
      * @param string $houseNumOrName
-     * @return \Szhorvath\GetAddress\GetAddressResponse\GetAddressResponse
+     * @param array $options
+     * @return GetAddressResponse
+     * @throws GetAddressAuthenticationFailedException
+     * @throws GetAddressRequestException
+     * @throws GuzzleException
      */
-    public function lookup($postcode, $houseNumOrName = '')
+    public function lookup($postcode, $houseNumOrName = '', $options = [])
     {
+        $requestParameters = ['auth' => ['api-key', $this->apiKey]];
+        if (!empty($options)) {
+            $requestParameters['query'] = $options;
+        }
+
         try {
-            $response = $this->client->get(sprintf('%s/%s', $postcode, $houseNumOrName), ['auth' => ['api-key', $this->apiKey]]);
+            $response = $this->client->get(sprintf('find/%s/%s', $postcode, $houseNumOrName), $requestParameters);
         } catch (RequestException $e) {
             if ($e->hasResponse() && $e->getResponse()->getStatusCode() == 401) {
                 throw new GetAddressAuthenticationFailedException();
             }
-
             throw new GetAddressRequestException();
+        } catch (GuzzleException $e) {
+            throw new GetAddressRequestException($e->getMessage(), $e->getCode());
         }
 
         $parsedResponse = $this->parseResponse((string) $response->getBody());
 
-        return  $parsedResponse;
+        return $parsedResponse;
     }
 
     /**
      * Processes the response coming from getaddress api
      *
      * @param string $response
-     * @return \Szhorvath\GetAddress\GetAddressResponse\GetAddressResponse
+     * @return GetAddressResponse
      */
     public function parseResponse($response)
     {
@@ -76,11 +85,11 @@ class GetAddress
         $getAddressResponse = new GetAddressResponse();
 
         //Set the longitude and latitude fields
-        $getAddressResponse->setLongitude($responseObj->Longitude);
-        $getAddressResponse->setLatitude($responseObj->Latitude);
+        $getAddressResponse->setLongitude($responseObj->longitude);
+        $getAddressResponse->setLatitude($responseObj->latitude);
 
         //Set the address fields
-        foreach ($responseObj->Addresses as $addressLine) {
+        foreach ($responseObj->addresses as $addressLine) {
             $addressParts = explode(',', $addressLine);
             $getAddressResponse->addAddress(
                 new Address(

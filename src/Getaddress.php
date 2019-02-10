@@ -55,12 +55,10 @@ class GetAddress
             $requestParameters['query'] = $options;
         }
 
-        try {
-            $request = $this->client->request('GET', sprintf('%s/%s', $postcode, $houseNumOrName), $requestParameters);
-            dump($request); die();
-            $response = $request->send();
+        dump($requestParameters);
 
-//            $response = $this->client->get(sprintf('%s/%s', $postcode, $houseNumOrName), $requestParameters);
+        try {
+            $response = $this->client->get(sprintf('%s/%s', $postcode, $houseNumOrName), $requestParameters);
         } catch (RequestException $e) {
             if ($e->hasResponse() && $e->getResponse()->getStatusCode() == 401) {
                 throw new GetAddressAuthenticationFailedException();

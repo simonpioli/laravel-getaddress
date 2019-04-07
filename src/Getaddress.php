@@ -48,7 +48,6 @@ class GetAddress
      */
     public function lookup($postcode, $houseNumOrName = '', $options = [])
     {
-//        TODO: Add support for expanded address
 //        TODO: Add support for array - bypasses hydration and returns an array
 //        TODO: Add tests
         $requestParameters = ['auth' => ['api-key', $this->apiKey]];
@@ -67,7 +66,6 @@ class GetAddress
             throw new GetAddressRequestException($e->getMessage(), $e->getCode());
         }
 
-
         $parsedResponse = $this->parseResponse((string) $response->getBody(), $options);
 
         return $parsedResponse;
@@ -82,8 +80,6 @@ class GetAddress
      */
     public function parseResponse($response, $options)
     {
-        dump($options);
-
         //Convert the response from JSON into an object
         $responseObj = json_decode($response);
 

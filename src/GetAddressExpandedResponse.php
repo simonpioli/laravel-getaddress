@@ -80,18 +80,17 @@ class GetAddressExpandedResponse
     /**
      * Get address
      *
-     * @return \Szhorvath\GetAddress\Address
+     * @return ExpandedAddress
      */
     public function getAddress()
     {
-        return (is_array($this->addresses) && count($this->addresses) === 1)? $this->addresses[0]: null;
+        return (is_array($this->addresses) && count($this->addresses) === 1) ? $this->addresses[0]: null;
     }
 
     /**
      * Set an address to the addresses array
      *
-     * @param \Szhorvath\GetAddress\ExpandedAddress $address
-     * @return array \Szhorvath\GetAddress\ExpandedAddress
+     * @param ExpandedAddress $address
      */
     public function addAddress($address)
     {

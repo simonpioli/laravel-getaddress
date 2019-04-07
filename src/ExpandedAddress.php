@@ -16,17 +16,37 @@ class ExpandedAddress
     /** @var string */
     protected $subBuildingNumber;
 
-
+    /** @var string */
     protected $subBuildingName;
+
+    /** @var string */
     protected $line1;
+
+    /** @var string */
     protected $line2;
+
+    /** @var string */
     protected $line3;
+
+    /** @var string */
     protected $line4;
+
+    /** @var string */
     protected $locality;
+
+    /** @var string */
     protected $townOrCity;
+
+    /** @var string */
     protected $county;
+
+    /** @var string */
     protected $district;
+
+    /** @var string */
     protected $country;
+
+    /** @var array */
     protected $formattedAddress = [];
 
     /**
@@ -71,7 +91,7 @@ class ExpandedAddress
         $this->line3 = $line3;
         $this->line4 = $line4;
         $this->locality = $locality;
-        $this->$townOrCity = $townOrCity;
+        $this->townOrCity = $townOrCity;
         $this->county = $county;
         $this->district = $district;
         $this->country = $country;
@@ -151,10 +171,25 @@ class ExpandedAddress
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getTownOrCity()
     {
+        return $this->townOrCity;
+    }
+
+    /**
+     * Gets the Locality if it's set, otherwise gets the City
+     * Assumes that if there's a locality it's within a city rather than a town
+     *
+     * @return string
+     */
+    public function getNormalisedTown()
+    {
+        if (!empty($this->locality)) {
+            return $this->locality;
+        }
+
         return $this->townOrCity;
     }
 
@@ -175,7 +210,7 @@ class ExpandedAddress
     }
 
     /**
-     * Gets the District if the County line is empty
+     * Gets the City if the County line is empty
      *
      * @return string
      */
@@ -185,7 +220,7 @@ class ExpandedAddress
             return $this->county;
         }
 
-        return $this->district;
+        return $this->townOrCity;
     }
 
     /**

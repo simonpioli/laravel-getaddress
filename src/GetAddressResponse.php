@@ -80,7 +80,7 @@ class GetAddressResponse
     /**
      * Get address
      *
-     * @return \Szhorvath\GetAddress\Address
+     * @return Address
      */
     public function getAddress()
     {
@@ -90,8 +90,7 @@ class GetAddressResponse
     /**
      * Set an address to the addresses array
      *
-     * @param \Szhorvath\GetAddress\Address $address
-     * @return array \Szhorvath\GetAddress\Address
+     * @param Address $address
      */
     public function addAddress($address)
     {

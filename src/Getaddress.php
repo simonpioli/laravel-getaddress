@@ -139,20 +139,20 @@ class GetAddress
         foreach ($responseObj->addresses as $addressLine) {
             $getAddressResponse->addAddress(
                 new ExpandedAddress(
-                    trim($addressLine['building_number']),
-                    trim($addressLine['building_name']),
-                    trim($addressLine['sub_building_number']),
-                    trim($addressLine['sub_building_name']),
-                    trim($addressLine['line_1']),
-                    trim($addressLine['line_2']),
-                    trim($addressLine['line_3']),
-                    trim($addressLine['line_4']),
-                    trim($addressLine['locality']),
-                    trim($addressLine['town_or_city']),
-                    trim($addressLine['county']),
-                    trim($addressLine['district']),
-                    trim($addressLine['country']),
-                    $addressLine['formatted_address']
+                    trim($addressLine->building_number),
+                    trim($addressLine->building_name),
+                    trim($addressLine->sub_building_number),
+                    trim($addressLine->sub_building_name),
+                    trim($addressLine->line_1),
+                    trim($addressLine->line_2),
+                    trim($addressLine->line_3),
+                    trim($addressLine->line_4),
+                    trim($addressLine->locality),
+                    trim($addressLine->town_or_city),
+                    trim($addressLine->county),
+                    trim($addressLine->district),
+                    trim($addressLine->country),
+                    $addressLine->formatted_address
                 )
             );
         }

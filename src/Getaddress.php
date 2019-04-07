@@ -6,8 +6,6 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7;
-use Szhorvath\GetAddress\GetAddressResponse;
-use Szhorvath\GetAddress\Address;
 
 class GetAddress
 {
@@ -50,6 +48,8 @@ class GetAddress
      */
     public function lookup($postcode, $houseNumOrName = '', $options = [])
     {
+//        TODO: Add support for array - bypasses hydration and returns an array
+//        TODO: Add tests
         $requestParameters = ['auth' => ['api-key', $this->apiKey]];
         if (!empty($options)) {
             $requestParameters['query'] = $options;
@@ -66,7 +66,7 @@ class GetAddress
             throw new GetAddressRequestException($e->getMessage(), $e->getCode());
         }
 
-        $parsedResponse = $this->parseResponse((string) $response->getBody());
+        $parsedResponse = $this->parseResponse((string) $response->getBody(), $options);
 
         return $parsedResponse;
     }
@@ -74,14 +74,30 @@ class GetAddress
     /**
      * Processes the response coming from getaddress api
      *
-     * @param string $response
-     * @return GetAddressResponse
+     * @param $response
+     * @param $options
+     * @return GetAddressExpandedResponse|GetAddressResponse
      */
-    public function parseResponse($response)
+    public function parseResponse($response, $options)
     {
         //Convert the response from JSON into an object
         $responseObj = json_decode($response);
 
+        if (array_key_exists('expand', $options) && $options['expand'] === 'true') {
+            $getAddressResponse = $this->hydrateExpandedAddresses($responseObj);
+        } else {
+            $getAddressResponse = $this->hydrateAddresses($responseObj);
+        }
+
+        return $getAddressResponse;
+    }
+
+    /**
+     * @param Object $responseObj
+     * @return GetAddressResponse
+     */
+    private function hydrateAddresses($responseObj)
+    {
         $getAddressResponse = new GetAddressResponse();
 
         //Set the longitude and latitude fields
@@ -105,5 +121,43 @@ class GetAddress
         }
 
         return $getAddressResponse;
+    }
+
+    /**
+     * @param Object $responseObj
+     * @return GetAddressExpandedResponse
+     */
+    private function hydrateExpandedAddresses($responseObj)
+    {
+        $getAddressResponse = new GetAddressExpandedResponse();
+
+        //Set the longitude and latitude fields
+        $getAddressResponse->setLongitude($responseObj->longitude);
+        $getAddressResponse->setLatitude($responseObj->latitude);
+
+        //Set the address fields
+        foreach ($responseObj->addresses as $addressLine) {
+            $getAddressResponse->addAddress(
+                new ExpandedAddress(
+                    trim($addressLine['building_number']),
+                    trim($addressLine['building_name']),
+                    trim($addressLine['sub_building_number']),
+                    trim($addressLine['sub_building_name']),
+                    trim($addressLine['line_1']),
+                    trim($addressLine['line_2']),
+                    trim($addressLine['line_3']),
+                    trim($addressLine['line_4']),
+                    trim($addressLine['locality']),
+                    trim($addressLine['town_or_city']),
+                    trim($addressLine['county']),
+                    trim($addressLine['district']),
+                    trim($addressLine['country']),
+                    $addressLine['formatted_address']
+                )
+            );
+        }
+
+        return $getAddressResponse;
+
     }
 }

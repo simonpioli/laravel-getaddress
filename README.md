@@ -99,6 +99,17 @@ class AddressController extends Controller
 }
 ```
 
+### Options
+As per the [GetAddress documentation](https://getaddress.io/Documentation) you can pass a house number or building name as a 2nd parameter.
+
+The 3rd parameter is an optional array of options.
+
+|Property|Description|Type|
+|---|---|---|
+|format|Formats the addresses as an arrays.|string (true/false)|
+|sort|Numerically sorts the addresses.|string (true/false)|
+|expand|Expands addresses in to individual named components, such as building number and thoroughfare.|string (true/false)|
+
 ## Change log
 
 Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.

@@ -238,4 +238,12 @@ class ExpandedAddress
     {
         return $this->formattedAddress;
     }
+
+    /**
+     * @return string
+     */
+    public function getFormattedAddressString()
+    {
+        return implode(', ', $this->formattedAddress);
+    }
 }

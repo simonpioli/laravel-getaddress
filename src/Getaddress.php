@@ -143,7 +143,7 @@ class GetAddress
                     trim($addressLine->building_name),
                     trim($addressLine->sub_building_number),
                     trim($addressLine->sub_building_name),
-                    trim($addressLine->line_1),
+                    trim($addressLine->thoroughfare),
                     trim($addressLine->line_2),
                     trim($addressLine->line_3),
                     trim($addressLine->line_4),

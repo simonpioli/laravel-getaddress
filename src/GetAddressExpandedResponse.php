@@ -4,65 +4,28 @@ namespace Szhorvath\GetAddress;
 
 class GetAddressExpandedResponse
 {
-    /**
-     * Address longitude
-     *
-     * @var string
-     */
-    protected $longitude;
+    protected string $longitude;
+    protected string $latitude;
+    protected array $addresses;
 
-    /**
-     * Address latitude
-     *
-     * @var string
-     */
-    protected $latitude;
-
-    /**
-     * Addresses array
-     *
-     * @var array
-     */
-    protected $addresses;
-
-    /**
-     * Set the longitude
-     *
-     * @param string $longitude
-     * @return void
-     */
-    public function setLongitude($longitude)
+    public function setLongitude(string $longitude): self
     {
         $this->longitude = $longitude;
+        return $this;
     }
 
-    /**
-     * Get longitude
-     *
-     * @return string
-     */
-    public function getLongitude()
+    public function getLongitude(): string
     {
         return $this->longitude;
     }
 
-    /**
-     * Set address lattitude
-     *
-     * @param string $latitude
-     * @return void
-     */
-    public function setLatitude($latitude)
+    public function setLatitude(string $latitude): self
     {
         $this->latitude = $latitude;
+        return $this;
     }
 
-    /**
-     * Get address lattitude
-     *
-     * @return string
-     */
-    public function getLatitude()
+    public function getLatitude(): string
     {
         return $this->latitude;
     }
@@ -72,28 +35,22 @@ class GetAddressExpandedResponse
      *
      * @return array
      */
-    public function getAddresses()
+    public function getAddresses(): array
     {
         return $this->addresses;
     }
 
-    /**
-     * Get address
-     *
-     * @return ExpandedAddress
-     */
-    public function getAddress()
+    public function getAddress(): ?ExpandedAddress
     {
-        return (is_array($this->addresses) && count($this->addresses) === 1) ? $this->addresses[0]: null;
+        return (count($this->addresses) === 1) ? $this->addresses[0] : null;
     }
 
     /**
      * Set an address to the addresses array
-     *
-     * @param ExpandedAddress $address
      */
-    public function addAddress($address)
+    public function addAddress(ExpandedAddress $address): self
     {
         $this->addresses[] = $address;
+        return $this;
     }
 }

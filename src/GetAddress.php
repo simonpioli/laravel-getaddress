@@ -2,110 +2,75 @@
 
 namespace Szhorvath\GetAddress;
 
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\GuzzleException;
-use GuzzleHttp\Exception\RequestException;
-use GuzzleHttp\Psr7;
+use Exception;
+use Illuminate\Http\Client\RequestException;
+use Illuminate\Support\Facades\Http;
 
 class GetAddress
 {
-    /**
-     * Guzzle client
-     *
-     * @var \GuzzleHttp\Client
-     */
-    protected $client;
-
-    /**
-     * Getaddress api key
-     *
-     * @var string
-     */
-    protected $apiKey;
-
     /**
      * Instantiate GetAddress
      *
      * @param string $apiKey
      */
-    public function __construct($apiKey)
+    public function __construct(protected string $apiKey)
     {
-        $this->client = new Client([
-            'base_uri' => config('getaddress.base_url')
-        ]);
-
-        $this->apiKey = $apiKey;
+        Http::macro('getaddress', function () {
+            return Http::baseUrl(config('getaddress.base_url'));
+        });
     }
 
     /**
-     * @param $postcode
-     * @param string $houseNumOrName
-     * @param array $options
-     * @return GetAddressResponse
      * @throws GetAddressAuthenticationFailedException
      * @throws GetAddressRequestException
-     * @throws GuzzleException
      */
-    public function lookup($postcode, $houseNumOrName = '', $options = [])
+    public function lookup(string $postcode, ?string $houseNumOrName, ?array $options = []): GetAddressExpandedResponse|GetAddressResponse
     {
 //        TODO: Add support for array - bypasses hydration and returns an array
 //        TODO: Add tests
-        $requestParameters = ['auth' => ['api-key', $this->apiKey]];
-        if (!empty($options)) {
-            $requestParameters['query'] = $options;
-        }
+        $requestParameters = array_merge(['api-key' => $this->apiKey], $options);
 
         try {
-            $response = $this->client->get(sprintf('find/%s/%s', $postcode, $houseNumOrName), $requestParameters);
+            $response = Http::getaddress()->get(sprintf('find/%s/%s', $postcode, $houseNumOrName), $requestParameters);
+            $response->throw();
         } catch (RequestException $e) {
-            if ($e->hasResponse() && $e->getResponse()->getStatusCode() == 401) {
+            if ($e->response->status() == 401) {
                 throw new GetAddressAuthenticationFailedException();
             }
             throw new GetAddressRequestException();
-        } catch (GuzzleException $e) {
+        } catch (Exception $e) {
             throw new GetAddressRequestException($e->getMessage(), $e->getCode());
         }
 
-        $parsedResponse = $this->parseResponse((string) $response->getBody(), $options);
-
-        return $parsedResponse;
+        return $this->parseResponse($response->json(), $options);
     }
 
     /**
      * Processes the response coming from getaddress api
-     *
-     * @param $response
-     * @param $options
-     * @return GetAddressExpandedResponse|GetAddressResponse
      */
-    public function parseResponse($response, $options)
+    public function parseResponse(array $addressArray, ?array $options): GetAddressExpandedResponse|GetAddressResponse
     {
-        //Convert the response from JSON into an object
-        $responseObj = json_decode($response);
 
         if (array_key_exists('expand', $options) && $options['expand'] === 'true') {
-            $getAddressResponse = $this->hydrateExpandedAddresses($responseObj);
+            $getAddressResponse = $this->hydrateExpandedAddresses($addressArray);
         } else {
-            $getAddressResponse = $this->hydrateAddresses($responseObj);
+            $getAddressResponse = $this->hydrateAddresses($addressArray);
         }
 
         return $getAddressResponse;
     }
 
-    /**
-     * @param Object $responseObj
-     * @return GetAddressResponse
-     */
-    private function hydrateAddresses($responseObj)
+    private function hydrateAddresses(array $addressArray): GetAddressResponse
     {
         $getAddressResponse = new GetAddressResponse();
 
         //Set the longitude and latitude fields
-        $getAddressResponse->setLongitude($responseObj->longitude);
-        $getAddressResponse->setLatitude($responseObj->latitude);
+        $getAddressResponse
+            ->setLongitude($addressArray['longitude'])
+            ->setLatitude($addressArray['latitude']);
 
         //Set the address fields
-        foreach ($responseObj->addresses as $addressLine) {
+        foreach ($addressArray['addresses'] as $addressLine) {
             $addressParts = explode(',', $addressLine);
             $getAddressResponse->addAddress(
                 new Address(
@@ -123,36 +88,33 @@ class GetAddress
         return $getAddressResponse;
     }
 
-    /**
-     * @param Object $responseObj
-     * @return GetAddressExpandedResponse
-     */
-    private function hydrateExpandedAddresses($responseObj)
+    private function hydrateExpandedAddresses(array $addressArray): GetAddressExpandedResponse
     {
         $getAddressResponse = new GetAddressExpandedResponse();
 
         //Set the longitude and latitude fields
-        $getAddressResponse->setLongitude($responseObj->longitude);
-        $getAddressResponse->setLatitude($responseObj->latitude);
+        $getAddressResponse
+            ->setLongitude($addressArray['longitude'])
+            ->setLatitude($addressArray['latitude']);
 
         //Set the address fields
-        foreach ($responseObj->addresses as $addressLine) {
+        foreach ($addressArray['addresses'] as $addressLine) {
             $getAddressResponse->addAddress(
                 new ExpandedAddress(
-                    trim($addressLine->building_number),
-                    trim($addressLine->building_name),
-                    trim($addressLine->sub_building_number),
-                    trim($addressLine->sub_building_name),
-                    trim($addressLine->thoroughfare),
-                    trim($addressLine->line_2),
-                    trim($addressLine->line_3),
-                    trim($addressLine->line_4),
-                    trim($addressLine->locality),
-                    trim($addressLine->town_or_city),
-                    trim($addressLine->county),
-                    trim($addressLine->district),
-                    trim($addressLine->country),
-                    $addressLine->formatted_address
+                    trim($addressLine['building_number']),
+                    trim($addressLine['building_name']),
+                    trim($addressLine['sub_building_number']),
+                    trim($addressLine['sub_building_name']),
+                    trim($addressLine['thoroughfare']),
+                    trim($addressLine['line_2']),
+                    trim($addressLine['line_3']),
+                    trim($addressLine['line_4']),
+                    trim($addressLine['locality']),
+                    trim($addressLine['town_or_city']),
+                    trim($addressLine['county']),
+                    trim($addressLine['district']),
+                    trim($addressLine['country']),
+                    $addressLine['formatted_address']
                 )
             );
         }

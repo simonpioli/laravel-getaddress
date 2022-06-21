@@ -6,5 +6,5 @@ use Exception;
 
 class GetAddressAuthenticationFailedException extends Exception
 {
-    protected $message = 'Authentication failed. Please check your API key';
+    protected $message = 'GetAddress.io authentication failed. Please check your API key';
 }

@@ -24,14 +24,17 @@ class GetAddress
      * @throws GetAddressAuthenticationFailedException
      * @throws GetAddressRequestException
      */
-    public function lookup(string $postcode, ?string $houseNumOrName, ?array $options = []): GetAddressExpandedResponse|GetAddressResponse
+    public function list(string $postcode, ?array $options = []): array
     {
-//        TODO: Add support for array - bypasses hydration and returns an array
-//        TODO: Add tests
-        $requestParameters = array_merge(['api-key' => $this->apiKey], $options);
+        $defaults = [
+            'all' => true,
+        ];
+        $mergedOptions = array_merge($defaults, $options);
+
+        $requestParameters = array_merge(['api-key' => $this->apiKey], $mergedOptions);
 
         try {
-            $response = Http::getaddress()->get(sprintf('find/%s/%s', $postcode, $houseNumOrName), $requestParameters);
+            $response = Http::getaddress()->get(sprintf('autocomplete/%s', $postcode), $requestParameters);
             $response->throw();
         } catch (RequestException $e) {
             if ($e->response->status() == 401) {
@@ -42,13 +45,29 @@ class GetAddress
             throw new GetAddressRequestException($e->getMessage(), $e->getCode());
         }
 
-        return $this->parseResponse($response->json(), $options);
+        return $response->json();
+    }
+
+    public function fetch(string $id): GetAddressResponse | GetAddressExpandedResponse
+    {
+        try {
+            $response = Http::getaddress()->get(sprintf('get/%s', $id), ['api-key' => $this->apiKey]);
+        } catch (RequestException $e) {
+            if ($e->response->status() == 401) {
+                throw new GetAddressAuthenticationFailedException();
+            }
+            throw new GetAddressRequestException();
+        } catch (Exception $e) {
+            throw new GetAddressRequestException($e->getMessage(), $e->getCode());
+        }
+
+        return $this->parseResponse($response->json());
     }
 
     /**
      * Processes the response coming from getaddress api
      */
-    public function parseResponse(array $addressArray, ?array $options): GetAddressExpandedResponse|GetAddressResponse
+    private function parseResponse(array $addressArray, ?array $options = []): GetAddressExpandedResponse|GetAddressResponse
     {
 
         if (array_key_exists('expand', $options) && $options['expand'] === 'true') {
@@ -120,6 +139,5 @@ class GetAddress
         }
 
         return $getAddressResponse;
-
     }
 }

@@ -23,13 +23,15 @@ class GetAddressServiceProvider extends ServiceProvider
 
         // use this if your package needs a config file
         $this->publishes([
-                __DIR__.'/config/getaddress.php' => config_path('getaddress.php'),
+                __DIR__ . '/../config/getaddress.php' => config_path('getaddress.php'),
         ]);
 
         // use the vendor configuration file as fallback
-        // $this->mergeConfigFrom(
-        //     __DIR__.'/config/config.php', 'skeleton'
-        // );
+         $this->mergeConfigFrom(
+             __DIR__.'/../config/getaddress.php', 'getaddress'
+         );
+
+        $this->loadRoutesFrom(__DIR__.'/../routes/api.php');
     }
     /**
      * Register any package services.

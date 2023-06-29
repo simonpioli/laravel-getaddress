@@ -20,7 +20,7 @@ class LocalOnly
             $domain = env('APP_BASE_DOMAIN');
         }
 
-        if (!str_contains($request->getHost(), $domain)) {
+        if (!str_contains($request->headers->get('referer'), $domain)) {
             return response(['errorMessage' => 'Invalid origin', 'code' => 400], 400);
         }
 

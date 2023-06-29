@@ -3,26 +3,51 @@
 namespace Szhorvath\GetAddress;
 
 /**
- * An individual address returned from the getaddress.io API
+ * An individual expanded address returned from the getaddress.io API
  */
 class Address
 {
-    /**
-     * Instantiates a new Address object
-     */
     public function __construct(
-        protected string $line1,
+        protected ?string $buildingNumber,
+        protected ?string $buildingName,
+        protected ?string $subBuildingNumber,
+        protected ?string $subBuildingName,
+        protected ?string $line1,
         protected ?string $line2,
         protected ?string $line3,
         protected ?string $line4,
-        protected ?string $town,
-        protected ?string $postalTown,
-        protected ?string $county
+        protected ?string $locality,
+        protected ?string $townOrCity,
+        protected ?string $county,
+        protected ?string $district,
+        protected ?string $postcode,
+        protected ?string $country,
+        protected ?array $formattedAddress
     ) {
         //
     }
 
-    public function getLine1(): string
+    public function getBuildingNumber(): ?string
+    {
+        return $this->buildingNumber;
+    }
+
+    public function getBuildingName(): ?string
+    {
+        return $this->buildingName;
+    }
+
+    public function getSubBuildingNumber(): ?string
+    {
+        return $this->subBuildingNumber;
+    }
+
+    public function getSubBuildingName(): ?string
+    {
+        return $this->subBuildingName;
+    }
+
+    public function getLine1(): ?string
     {
         return $this->line1;
     }
@@ -42,27 +67,27 @@ class Address
         return $this->line4;
     }
 
-    public function getTown(): ?string
+    public function getLocality(): ?string
     {
-        return $this->town;
+        return $this->locality;
     }
 
-    public function getPostalTown(): ?string
+    public function getTownOrCity(): ?string
     {
-        return $this->postalTown;
+        return $this->townOrCity;
     }
-
 
     /**
-     * Returns the most appropriate of the two town fields
+     * Gets the Locality if it's set, otherwise gets the City
+     * Assumes that if there's a locality it's within a city rather than a town
      */
-    public function getNormalisedTown(): string
+    public function getNormalisedTown(): ?string
     {
-        if ($this->town != '') {
-            return $this->town;
+        if (!empty($this->locality)) {
+            return $this->locality;
         }
 
-        return $this->postalTown;
+        return $this->townOrCity;
     }
 
     public function getCounty(): ?string
@@ -70,11 +95,35 @@ class Address
         return $this->county;
     }
 
-    /**
-     * Returns the address as comma separated string
-     */
-    public function toCsv(): string
+    public function getDistrict(): ?string
     {
-        return sprintf('%s,%s,%s,%s,%s,%s,%s', $this->getLine1(), $this->getLine2(), $this->getLine3(), $this->getLine4(), $this->getTown(), $this->getPostalTown(), $this->getCounty());
+        return $this->district;
+    }
+
+    /**
+     * Gets the City if the County line is empty
+     */
+    public function getNormalisedCounty(): ?string
+    {
+        if (!empty($this->county)) {
+            return $this->county;
+        }
+
+        return $this->townOrCity;
+    }
+
+    public function getPostcode(): ?string
+    {
+        return $this->postcode;
+    }
+
+    public function getCountry(): ?string
+    {
+        return $this->country;
+    }
+
+    public function getFormattedAddress(): ?array
+    {
+        return $this->formattedAddress;
     }
 }

@@ -1,6 +1,7 @@
 <?php
 namespace Szhorvath\GetAddress;
 
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Routing\Router;
 use Szhorvath\GetAddress\GetAddress;
@@ -31,7 +32,9 @@ class GetAddressServiceProvider extends ServiceProvider
              __DIR__.'/../config/getaddress.php', 'getaddress'
          );
 
-        $this->loadRoutesFrom(__DIR__.'/../routes/api.php');
+         Route::group(['prefix' => 'api', 'middleware' => 'api'], function () {
+            $this->loadRoutesFrom(__DIR__.'/../routes/api.php');
+         });
     }
     /**
      * Register any package services.
@@ -50,7 +53,7 @@ class GetAddressServiceProvider extends ServiceProvider
     private function registerGetAddress()
     {
         $this->app->singleton('getaddress', function ($app) {
-            return new GetAddress(config('getaddress.api_key'));
+            return new GetAddress();
         });
 
         $this->app->alias('getaddress', GetAddress::class);

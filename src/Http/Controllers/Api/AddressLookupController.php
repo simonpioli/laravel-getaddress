@@ -115,7 +115,7 @@ class AddressLookupController extends BaseController
                 'county' => $rawAddress->getNormalisedCounty() != $rawAddress->getNormalisedTown(
                 ) ? $rawAddress->getNormalisedCounty() : '',
                 'postcode' => $rawAddress->getPostcode(),
-                'formatted_address' => $rawAddress->getFormattedAddressString()
+                'formatted_address' => $rawAddress->getFormattedAddress()
             ];
 
             $response['address'] = $address;
